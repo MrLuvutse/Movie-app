@@ -1,22 +1,39 @@
-.watchlist {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+.watchlist { padding-top: 96px; }
+.watchlist__count {
+  font-size: 14px; color: var(--text-muted);
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 5px 14px; border-radius: 20px;
 }
-
-.watchlist h2 {
-  margin-bottom: 1.5rem;
-  color: #333;
+.watchlist__empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center;
+  padding: 100px 24px; gap: 16px;
 }
-
-.watchlist-empty {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: #666;
+.watchlist__empty-icon { font-size: 72px; margin-bottom: 8px; opacity: 0.6; }
+.watchlist__empty-title {
+  font-family: var(--font-display); font-size: 36px;
+  letter-spacing: 1px; color: var(--text);
 }
-
-.movies-grid {
+.watchlist__empty-sub {
+  font-size: 16px; color: var(--text-muted);
+  max-width: 400px; line-height: 1.65; margin-bottom: 8px;
+}
+.watchlist__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 22px;
+}
+.watchlist__item { display: flex; flex-direction: column; gap: 8px; }
+.watchlist__remove {
+  width: 100%; padding: 7px; border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 500; color: var(--text-muted);
+  background: transparent; border: 1px solid var(--border);
+  transition: var(--transition); letter-spacing: 0.5px;
+}
+.watchlist__remove:hover {
+  color: #e05252; border-color: rgba(224,82,82,0.4);
+  background: rgba(224,82,82,0.07);
+}
+@media (max-width: 600px) {
+  .watchlist__grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
 }

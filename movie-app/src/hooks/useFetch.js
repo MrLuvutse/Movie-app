@@ -1,30 +1,21 @@
-import { useState, useEffect } from 'react';
-import { useMovies } from '../context/MovieContext';
+import { useState, useEffect } from "react";
 
-const useFetch = (url, dispatchType) => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
+const BASE = "http://localhost:5000";
+
+export default function useFetch(endpoint) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { dispatch } = useMovies();
 
   useEffect(() => {
+    if (!endpoint) return;
     setLoading(true);
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        setData(data.results || data);
-        if (dispatchType) {
-          dispatch({ type: dispatchType, payload: data.results || data });
-        }
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err);
-        setLoading(false);
-      });
-  }, [url, dispatchType]);
+    setError(null);
+    fetch(`${BASE}${endpoint}`)
+      .then((r) => { if (!r.ok) throw new Error("Failed to fetch"); return r.json(); })
+      .then((d) => { setData(d); setLoading(false); })
+      .catch((e) => { setError(e.message); setLoading(false); });
+  }, [endpoint]);
 
   return { data, loading, error };
-};
-
-export default useFetch;
+}

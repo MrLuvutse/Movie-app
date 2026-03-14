@@ -1,44 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useMovies } from '../context/MovieContext';
-import '../components/Navbar.css';
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useMovies } from "../context/MovieContext";
+import "./Navbar.css";
 
-const Navbar = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const { state, dispatch } = useMovies();
+export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [search, setSearch] = useState("");
+  const { watchlist } = useMovies();
+  const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      dispatch({ type: 'SET_SEARCH_QUERY', payload: searchQuery });
-      navigate('/browse');
+    if (search.trim()) {
+      navigate(`/browse?q=${encodeURIComponent(search.trim())}`);
+      setSearch("");
     }
   };
 
+  const isActive = (path) => location.pathname === path;
+
   return (
-    <nav className="navbar">
-      <div className="nav-container">
-        <Link to="/" className="nav-logo">
-          MovieApp
+    <nav className={`navbar${scrolled ? " scrolled" : ""}`}>
+      <div className="navbar-inner">
+        <Link to="/" className="navbar-logo">
+          CINE<span>VAULT</span>
         </Link>
-        <ul className="nav-menu">
-          <li><Link to="/">Home</Link></li>
-          <li><Link to="/browse">Browse</Link></li>
-          <li><Link to="/watchlist">Watchlist ({state.watchlist.length})</Link></li>
-        </ul>
-        <form onSubmit={handleSearch} className="search-form">
+        <div className="navbar-links">
+          <Link to="/" className={`nav-link${isActive("/") ? " active" : ""}`}>Discover</Link>
+          <Link to="/browse" className={`nav-link${isActive("/browse") ? " active" : ""}`}>Browse</Link>
+          <Link to="/watchlist" className={`nav-link${isActive("/watchlist") ? " active" : ""}`}>
+            Watchlist
+            {watchlist.length > 0 && <span className="nav-badge">{watchlist.length}</span>}
+          </Link>
+        </div>
+        <form className="navbar-search" onSubmit={handleSearch}>
+          <span className="search-icon">⌕</span>
           <input
-            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Search movies..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
           />
         </form>
+        <div className="navbar-avatar">JS</div>
       </div>
     </nav>
   );
-};
-
-export default Navbar;
+}
