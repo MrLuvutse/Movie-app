@@ -1,21 +1,25 @@
-# Movie App - READY TO RUN
+# Movie App Fixes - Progress Tracker
 
-✅ **All files implemented:** Full TMDB movie app with:
+## Plan Overview
 
-- Backend: Express proxy API (/trending, /search, /movie/:id)
-- Frontend: React Router, Context API, custom fetch hook, responsive components/pages, localStorage watchlist, trailers
-- CSS: Styled navbar, cards, pages, details
+Fix runtime errors (missing imports), secure API key, test functionality.
 
-**Run manually (Windows cmd):**
+## Steps (0/7 complete):
 
-1. Backend: `cd server` then `npm install axios` then `npm run dev` (localhost:5000)
-2. Frontend: `cd movie-app` then `npm start` (localhost:3000)
+### 1. ✅ Create this TODO.md
 
-**Features:**
+### 2. ✅ Fix Home.js missing useNavigate import (imports cleaned)
 
-- Home: Trending + Now Playing grids
-- Browse: Search movies
-- Watchlist: Persist/add/remove
-- Detail: Overview, rating, trailer
+### 3. ✅ Fix Browse.js missing useSearchParams import (imports cleaned)
 
-No more empty files/errors - fully functional!
+### 4. ✅ Add dotenv to server, create .env for TMDB key (keep existing key)
+
+### 5. ✅ Update server/index.js to use process.env.TMDB_KEY
+
+### 6. Install dependencies: cd server && npm i dotenv
+
+### 7. Test: cd server && npm run dev | cd ../movie-app && npm start
+
+**Next: Run `npm install` in movie-app if needed. Confirm each step success.**
+
+**Completion command:** npm start (frontend) + server running.

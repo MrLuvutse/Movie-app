@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
@@ -5,7 +7,7 @@ const cors = require("cors");
 const app = express();
 const PORT = 5000;
 
-const TMDB_KEY = "6db390c6380c1f6f5140fd047c7af8be"; // 👈 paste your key here
+const TMDB_KEY = process.env.TMDB_KEY || "6db390c6380c1f6f5140fd047c7af8be";
 const TMDB_BASE = "https://api.themoviedb.org/3";
 const IMG_BASE = "https://image.tmdb.org/t/p/w500";
 const BACKDROP_BASE = "https://image.tmdb.org/t/p/original";
