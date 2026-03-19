@@ -38,24 +38,24 @@ function Hero({ movie }) {
 }
 
 export default function Home() {
-  const { data: trending, loading: tLoading } = useFetch("/api/trending");
-  const { data: popular, loading: pLoading } = useFetch("/api/popular");
-  const { data: topRated, loading: trLoading } = useFetch("/api/top-rated");
+  const { data: trending, loading: tLoading } = useFetch("/api/trending", { page: 1 });
+  const { data: popular, loading: pLoading } = useFetch("/api/popular", { page: 1 });
+  const { data: topRated, loading: trLoading } = useFetch("/api/top-rated", { page: 1 });
   const navigate = useNavigate();
 
   return (
     <div className="home">
-      <Hero movie={trending?.[0] || null} />
+<Hero movie={trending?.results?.[0] || null} />
       <div className="page-container home__sections">
 
         <section className="home__section">
           <div className="section-header">
             <h2 className="section-title">Trending This Week</h2>
-            <span className="see-all" onClick={() => navigate("/browse?tab=trending")}>See all →</span>
+<span className="see-all" onClick={() => navigate("/browse?tab=trending&page=1")}>See all →</span>
           </div>
           {tLoading ? <div className="spinner" /> : (
             <div className="movies-grid">
-              {trending?.slice(0, 6).map((m) => <MovieCard key={m.id} movie={m} />)}
+              {trending?.results?.slice(0, 6).map((m) => <MovieCard key={m.id} movie={m} />) || []}
             </div>
           )}
         </section>
@@ -63,13 +63,13 @@ export default function Home() {
         <section className="home__section">
           <div className="section-header">
             <h2 className="section-title">Popular Now</h2>
-            <span className="see-all" onClick={() => navigate("/browse?tab=popular")}>See all →</span>
+<span className="see-all" onClick={() => navigate("/browse?tab=popular&page=1")}>See all →</span>
           </div>
           {pLoading ? <div className="spinner" /> : (
             <div className="movies-scroll-row">
-              {popular?.slice(0, 10).map((m) => (
+              {popular?.results?.slice(0, 10).map((m) => (
                 <div key={m.id} className="scroll-item"><MovieCard movie={m} size="sm" /></div>
-              ))}
+              )) || []}
             </div>
           )}
         </section>
@@ -77,11 +77,11 @@ export default function Home() {
         <section className="home__section">
           <div className="section-header">
             <h2 className="section-title">Top Rated All Time</h2>
-            <span className="see-all" onClick={() => navigate("/browse?tab=top-rated")}>See all →</span>
+<span className="see-all" onClick={() => navigate("/browse?tab=top-rated&page=1")}>See all →</span>
           </div>
           {trLoading ? <div className="spinner" /> : (
             <div className="top-rated-list">
-              {topRated?.slice(0, 8).map((m, i) => (
+              {topRated?.results?.slice(0, 8).map((m, i) => (
                 <div key={m.id} className="top-rated-item" onClick={() => navigate(`/movie/${m.id}`)}>
                   <div className="top-rated-rank">{i + 1}</div>
                   <div className="top-rated-poster">
@@ -98,7 +98,7 @@ export default function Home() {
                   </div>
                   <div className="top-rated-score">{m.rating}</div>
                 </div>
-              ))}
+              )) || []}
             </div>
           )}
         </section>

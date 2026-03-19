@@ -31,29 +31,49 @@ function shape(m) {
 
 app.get("/api/trending", async (req, res) => {
   try {
-    const { data } = await axios.get(`${TMDB_BASE}/trending/movie/week`, { params: { api_key: TMDB_KEY } });
-    res.json(data.results.map(shape));
+    const page = parseInt(req.query.page) || 1;
+    const { data } = await axios.get(`${TMDB_BASE}/trending/movie/week`, { params: { api_key: TMDB_KEY, page } });
+    res.json({
+      page: data.page,
+      total_pages: data.total_pages,
+      results: data.results.map(shape)
+    });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.get("/api/now-playing", async (req, res) => {
   try {
-    const { data } = await axios.get(`${TMDB_BASE}/movie/now_playing`, { params: { api_key: TMDB_KEY, language: "en-US", page: 1 } });
-    res.json(data.results.map(shape));
+    const page = parseInt(req.query.page) || 1;
+    const { data } = await axios.get(`${TMDB_BASE}/movie/now_playing`, { params: { api_key: TMDB_KEY, language: "en-US", page } });
+    res.json({
+      page: data.page,
+      total_pages: data.total_pages,
+      results: data.results.map(shape)
+    });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.get("/api/popular", async (req, res) => {
   try {
-    const { data } = await axios.get(`${TMDB_BASE}/movie/popular`, { params: { api_key: TMDB_KEY, language: "en-US", page: 1 } });
-    res.json(data.results.map(shape));
+    const page = parseInt(req.query.page) || 1;
+    const { data } = await axios.get(`${TMDB_BASE}/movie/popular`, { params: { api_key: TMDB_KEY, language: "en-US", page } });
+    res.json({
+      page: data.page,
+      total_pages: data.total_pages,
+      results: data.results.map(shape)
+    });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.get("/api/top-rated", async (req, res) => {
   try {
-    const { data } = await axios.get(`${TMDB_BASE}/movie/top_rated`, { params: { api_key: TMDB_KEY, language: "en-US", page: 1 } });
-    res.json(data.results.map(shape));
+    const page = parseInt(req.query.page) || 1;
+    const { data } = await axios.get(`${TMDB_BASE}/movie/top_rated`, { params: { api_key: TMDB_KEY, language: "en-US", page } });
+    res.json({
+      page: data.page,
+      total_pages: data.total_pages,
+      results: data.results.map(shape)
+    });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -84,11 +104,16 @@ app.get("/api/movie/:id", async (req, res) => {
 });
 
 app.get("/api/search", async (req, res) => {
-  const { q } = req.query;
-  if (!q) return res.json([]);
+  const { q, page: pageParam } = req.query;
+  if (!q) return res.json({ page: 1, total_pages: 0, results: [] });
   try {
-    const { data } = await axios.get(`${TMDB_BASE}/search/movie`, { params: { api_key: TMDB_KEY, query: q } });
-    res.json(data.results.map(shape));
+    const page = parseInt(pageParam) || 1;
+    const { data } = await axios.get(`${TMDB_BASE}/search/movie`, { params: { api_key: TMDB_KEY, query: q, page } });
+    res.json({
+      page: data.page,
+      total_pages: data.total_pages,
+      results: data.results.map(shape)
+    });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

@@ -1,25 +1,9 @@
-# Movie App Fixes - Progress Tracker
+# Pagination + Genre Filtering TODO
 
-## Plan Overview
-
-Fix runtime errors (missing imports), secure API key, test functionality.
-
-## Steps (0/7 complete):
-
-### 1. ✅ Create this TODO.md
-
-### 2. ✅ Fix Home.js missing useNavigate import (imports cleaned)
-
-### 3. ✅ Fix Browse.js missing useSearchParams import (imports cleaned)
-
-### 4. ✅ Add dotenv to server, create .env for TMDB key (keep existing key)
-
-### 5. ✅ Update server/index.js to use process.env.TMDB_KEY
-
-### 6. Install dependencies: cd server && npm i dotenv
-
-### 7. Test: cd server && npm run dev | cd ../movie-app && npm start
-
-**Next: Run `npm install` in movie-app if needed. Confirm each step success.**
-
-**Completion command:** npm start (frontend) + server running.
+- [x] Update server/index.js: Add page param support to all list endpoints (/trending, /popular, /top-rated, /now-playing, /search)
+- [x] Update movie-app/src/hooks/useFetch.js: Accept options {page}, append ?page=${page}
+- [x] Update movie-app/src/pages/Browse.js: Add page state, Load More button, genres fetch/filter
+- [x] Update movie-app/src/pages/Browse.css: Styles for genre chips, load more btn
+- [x] Update movie-app/src/pages/Home.js: Ensure links pass page=1
+- [x] Test pagination in tabs/search, genre filtering
+- [x] Update TODO.md with completion

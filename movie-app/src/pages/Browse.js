@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import MovieCard from "../components/MovieCard";
 import useFetch from "../hooks/useFetch";
 import "./Browse.css";
@@ -16,40 +16,70 @@ export default function Browse() {
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "trending");
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [inputVal, setInputVal] = useState(searchParams.get("q") || "");
-  const [searchResults, setSearchResults] = useState(null);
-  const [searching, setSearching] = useState(false);
+  const [genres, setGenres] = useState([]);
+  const [selectedGenre, setSelectedGenre] = useState(null);
+  const [movies, setMovies] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const { data: trending } = useFetch("/api/trending");
-  const { data: popular } = useFetch("/api/popular");
-  const { data: topRated } = useFetch("/api/top-rated");
-  const { data: nowPlaying } = useFetch("/api/now-playing");
+  const { data: trendingData } = useFetch("/api/trending", { page });
+  const { data: popularData } = useFetch("/api/popular", { page });
+  const { data: topRatedData } = useFetch("/api/top-rated", { page });
+  const { data: nowPlayingData } = useFetch("/api/now-playing", { page });
+  const { data: genresData } = useFetch("/api/genres");
+  const { data: searchData } = useFetch(query ? `/api/search?q=${encodeURIComponent(query)}` : null, { page });
 
-  const tabData = { trending, popular, "top-rated": topRated, "now-playing": nowPlaying };
-  const movies = tabData[activeTab] || [];
 
   useEffect(() => {
-    if (!query) { setSearchResults(null); return; }
-    setSearching(true);
-    fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(query)}`)
-      .then((r) => r.json())
-      .then((d) => { setSearchResults(d); setSearching(false); })
-      .catch(() => setSearching(false));
-  }, [query]);
+    if (genresData) setGenres(genresData);
+  }, [genresData]);
+
+  useEffect(() => {
+    const dataMap = {
+      trending: trendingData,
+      popular: popularData,
+      'top-rated': topRatedData,
+      'now-playing': nowPlayingData,
+    };
+    const data = dataMap[activeTab];
+    if (data) {
+      setMovies(data.results || []);
+      setTotalPages(data.total_pages || 0);
+      setPage(1);
+    }
+  }, [activeTab, trendingData, popularData, topRatedData, nowPlayingData]);
+
+  useEffect(() => {
+    if (searchData) {
+      setMovies(prev => page === 1 ? searchData.results || [] : [...prev, ...(searchData.results || [])]);
+      setTotalPages(searchData.total_pages || 0);
+    }
+  }, [searchData, page, query]);
+
+  const filteredMovies = selectedGenre 
+    ? movies.filter(m => m.genre_ids?.includes(selectedGenre))
+    : movies;
 
   const handleSearch = (e) => {
     e.preventDefault();
     setQuery(inputVal);
-    if (inputVal) setSearchParams({ q: inputVal });
-    else setSearchParams({});
+    setPage(1);
+    if (inputVal) setSearchParams({ q: inputVal, page: '1' });
+    else setSearchParams({ tab: activeTab, page: '1' });
   };
 
   const clearSearch = () => {
-    setQuery(""); setInputVal(""); setSearchResults(null);
-    setSearchParams({ tab: activeTab });
+    setQuery("");
+    setInputVal("");
+    setMovies([]);
+    setPage(1);
+    setSelectedGenre(null);
+    setSearchParams({ tab: activeTab, page: '1' });
   };
 
-  const displayMovies = query ? (searchResults || []) : movies;
-  const isLoading = query ? searching : !tabData[activeTab];
+  const displayMovies = filteredMovies;
+  const uiLoading = loadingMore || (!movies.length && page === 1);
 
   return (
     <div className="browse">
@@ -67,13 +97,32 @@ export default function Browse() {
           </form>
         </div>
 
+{genres.length > 0 && !query && (
+          <div className="browse__genres">
+            <button 
+              className={`browse__genre${!selectedGenre ? ' active' : ''}`}
+              onClick={() => setSelectedGenre(null)}
+            >
+              All Genres
+            </button>
+            {genres.slice(0, 10).map((g) => (
+              <button 
+                key={g.id}
+                className={`browse__genre${selectedGenre === g.id ? ' active' : ''}`}
+                onClick={() => setSelectedGenre(g.id)}
+              >
+                {g.name}
+              </button>
+            ))}
+          </div>
+        )}
         {!query && (
           <div className="browse__tabs">
             {TABS.map((t) => (
               <button
                 key={t.key}
                 className={`browse__tab${activeTab === t.key ? " active" : ""}`}
-                onClick={() => { setActiveTab(t.key); setSearchParams({ tab: t.key }); }}
+                onClick={() => { setActiveTab(t.key); setSearchParams({ tab: t.key, page: '1' }); setSelectedGenre(null); }}
               >
                 {t.label}
               </button>
@@ -88,17 +137,31 @@ export default function Browse() {
           </div>
         )}
 
-        {isLoading ? (
+        {uiLoading ? (
           <div className="spinner" />
         ) : displayMovies.length === 0 ? (
           <div className="browse__empty">
             <div className="browse__empty-icon">🎬</div>
-            <p>No movies found{query ? ` for "${query}"` : ""}.</p>
+            <p>No movies found{query ? ` for "${query}"` : ` in ${activeTab.replace('-', ' ')}`}${selectedGenre ? ` in ${genres.find(g => g.id === selectedGenre)?.name || ''}` : ''}.</p>
           </div>
         ) : (
-          <div className="browse__grid">
-            {displayMovies.map((m) => <MovieCard key={m.id} movie={m} />)}
-          </div>
+          <>
+            <div className="browse__grid">
+              {displayMovies.map((m) => <MovieCard key={m.id} movie={m} />)}
+            </div>
+            {totalPages > 1 && page < totalPages && (
+              <button 
+                className="btn-primary browse__load-more"
+                onClick={() => { setLoadingMore(true); setPage(p => p + 1); }}
+                disabled={loadingMore}
+              >
+                {loadingMore ? 'Loading...' : `Load More (Page ${page + 1})`}
+              </button>
+            )}
+            {page > 1 && (
+              <p className="browse__page-info">Showing page {page} of {totalPages}</p>
+            )}
+          </>
         )}
       </div>
     </div>
