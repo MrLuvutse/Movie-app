@@ -1,32 +1,59 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useMovies } from "../context/MovieContext";
+import useFetch from "../hooks/useFetch";
 import "./MovieDetail.css";
 
 export default function MovieDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useMovies();
-  const [movie, setMovie] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const inList = isInWatchlist(Number(id));
+
+  const numericId = useMemo(() => Number(id), [id]);
+  const inList = isInWatchlist(numericId);
+
+  const {
+    data: movie,
+    loading,
+    error,
+    refetch,
+  } = useFetch(`/api/movie/${id}`, { page: 1, refetchKey: id });
 
   useEffect(() => {
-    setLoading(true);
     window.scrollTo(0, 0);
-    fetch(`http://localhost:5000/api/movie/${id}`)
-      .then((r) => r.json())
-      .then((d) => { setMovie(d); setLoading(false); })
-      .catch(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div className="detail-loading"><div className="spinner" /></div>;
-  if (!movie) return <div className="detail-loading"><p>Movie not found.</p></div>;
-
   const handleWatchlist = () => {
+    if (!movie) return;
     if (inList) removeFromWatchlist(movie.id);
-    else addToWatchlist({ id: movie.id, title: movie.title, poster: movie.poster, backdrop: movie.backdrop, rating: movie.rating, year: movie.year });
+    else addToWatchlist({
+      id: movie.id,
+      title: movie.title,
+      poster: movie.poster,
+      backdrop: movie.backdrop,
+      rating: movie.rating,
+      year: movie.year,
+    });
   };
+
+  if (loading)
+    return (
+      <div className="detail-loading">
+        <div className="spinner" />
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="detail-loading">
+        <p style={{ marginBottom: 12 }}>Could not load movie.</p>
+        <button className="btn-secondary" onClick={refetch}>
+          Retry
+        </button>
+      </div>
+    );
+
+  if (!movie) return <div className="detail-loading"><p>Movie not found.</p></div>;
 
   const hours = Math.floor(movie.runtime / 60);
   const mins = movie.runtime % 60;
@@ -73,8 +100,10 @@ export default function MovieDetail() {
               {movie.cast.map((c) => (
                 <div key={c.id} className="cast-card">
                   <div className="cast-card__photo">
-                    {c.photo ? <img src={c.photo} alt={c.name} loading="lazy" /> : (
-                      <div className="cast-card__initials">{c.name.split(" ").map((w) => w[0]).join("").slice(0,2)}</div>
+                    {c.photo ? (
+                      <img src={c.photo} alt={c.name} loading="lazy" />
+                    ) : (
+                      <div className="cast-card__initials">{c.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}</div>
                     )}
                   </div>
                   <div className="cast-card__name">{c.name}</div>
@@ -88,3 +117,4 @@ export default function MovieDetail() {
     </div>
   );
 }
+
